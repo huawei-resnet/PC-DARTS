@@ -17,6 +17,7 @@ from torch.autograd import Variable
 from model_search import Network
 from architect import Architect
 
+import pickle
 
 parser = argparse.ArgumentParser("cifar")
 parser.add_argument('--data', type=str, default='../data', help='location of the data corpus')
@@ -109,13 +110,18 @@ def main():
 
   architect = Architect(model, args)
 
+  history_train_acc = []
+  history_genotype = []
+  history_lr = []
   for epoch in range(args.epochs):
     scheduler.step()
     lr = scheduler.get_lr()[0]
     logging.info('epoch %d lr %e', epoch, lr)
+    history_lr.append(lr)
 
     genotype = model.genotype()
     logging.info('genotype = %s', genotype)
+    history_genotype.append(genotype)
 
     print(F.softmax(model.alphas_normal, dim=-1))
     print(F.softmax(model.alphas_reduce, dim=-1))
@@ -124,6 +130,7 @@ def main():
     # training
     train_acc, train_obj = train(train_queue, valid_queue, model, architect, criterion, optimizer, lr,epoch)
     logging.info('train_acc %f', train_acc)
+    history_train_acc.append(train_acc)
 
     # validation
     if args.epochs-epoch<=1:
@@ -131,7 +138,9 @@ def main():
       logging.info('valid_acc %f', valid_acc)
 
     utils.save(model, os.path.join(args.save, 'weights.pt'))
-
+  pickle.dump(history_train_acc, open('./history/train_acc.bin', 'wb'))
+  pickle.dump(history_genotype, open('./history/genotype.bin', 'wb'))
+  pickle.dump(history_lr, open('./history/lr.bin', 'wb'))
 
 def train(train_queue, valid_queue, model, architect, criterion, optimizer, lr,epoch):
   objs = utils.AvgrageMeter()
