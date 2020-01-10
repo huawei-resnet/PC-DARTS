@@ -230,3 +230,54 @@ class Network(nn.Module):
     )
     return genotype
 
+
+  def genotype_debug(self):
+
+    def _parse(weights, weights2):
+      gene = []
+      n = 2
+      start = 0
+      for i in range(self._steps):
+        end = start + n
+        W = weights[start:end].copy()
+        W2 = weights2[start:end].copy()
+        for j in range(n):
+          W[j, :] = W[j, :] * W2[j]
+        edges = sorted(range(i + 2), key=lambda x: -max(W[x][k] for k in range(len(W[x])) if k != PRIMITIVES.index('none')))
+
+        # edges = sorted(range(i + 2), key=lambda x: -W2[x])[:2]
+        for j in edges:
+          k_best = None
+          k_prev_best = None
+          for k in range(len(W[j])):
+            if k != PRIMITIVES.index('none'):
+              if k_best is None or W[j][k] > W[j][k_best]:
+                k_prev_best = k_best
+                k_best = k
+              if k_prev_best is None or W[j][k] > W[j][k_best]:
+                k_prev_best = k
+          gene.append((PRIMITIVES[k_best], PRIMITIVES[k_prev_best], j))
+        start = end
+        n += 1
+      return gene
+    n = 3
+    start = 2
+    weightsr2 = F.softmax(self.betas_reduce[0:2], dim=-1)
+    weightsn2 = F.softmax(self.betas_normal[0:2], dim=-1)
+    for i in range(self._steps-1):
+      end = start + n
+      tw2 = F.softmax(self.betas_reduce[start:end], dim=-1)
+      tn2 = F.softmax(self.betas_normal[start:end], dim=-1)
+      start = end
+      n += 1
+      weightsr2 = torch.cat([weightsr2,tw2],dim=0)
+      weightsn2 = torch.cat([weightsn2,tn2],dim=0)
+    gene_normal = _parse(F.softmax(self.alphas_normal, dim=-1).data.cpu().numpy(),weightsn2.data.cpu().numpy())
+    gene_reduce = _parse(F.softmax(self.alphas_reduce, dim=-1).data.cpu().numpy(),weightsr2.data.cpu().numpy())
+
+    concat = range(2+self._steps-self._multiplier, self._steps+2)
+    genotype_debug = Genotype(
+      normal=gene_normal, normal_concat=concat,
+      reduce=gene_reduce, reduce_concat=concat
+    )
+    return genotype_debug
