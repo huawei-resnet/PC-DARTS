@@ -113,11 +113,17 @@ def main():
   history_train_acc = []
   history_genotype = []
   history_lr = []
+
+  history_genotype_debug = []
   for epoch in range(args.epochs):
     scheduler.step()
     lr = scheduler.get_lr()[0]
     logging.info('epoch %d lr %e', epoch, lr)
     history_lr.append(lr)
+
+    genotype_debug = model.genotype_debug()
+    logging.info('genotype_debug = %s', genotype_debug)
+    history_genotype_debug.append(genotype_debug)
 
     genotype = model.genotype()
     logging.info('genotype = %s', genotype)
@@ -138,9 +144,10 @@ def main():
       logging.info('valid_acc %f', valid_acc)
 
     utils.save(model, os.path.join(args.save, 'weights.pt'))
-  pickle.dump(history_train_acc, open('./history/train_acc.bin', 'wb'))
-  pickle.dump(history_genotype, open('./history/genotype.bin', 'wb'))
-  pickle.dump(history_lr, open('./history/lr.bin', 'wb'))
+  pickle.dump(history_train_acc, open(os.path.join(args.save, 'train_acc.bin'), 'wb'))
+  pickle.dump(history_genotype, open(os.path.join(args.save, 'genotype.bin'), 'wb'))
+  pickle.dump(history_lr, open(os.path.join(args.save, 'lr.bin'), 'wb'))
+  pickle.dump(history_genotype_debug, open(os.path.join(args.save, 'genotype_debug.bin'), 'wb'))
 
 def train(train_queue, valid_queue, model, architect, criterion, optimizer, lr,epoch):
   objs = utils.AvgrageMeter()
