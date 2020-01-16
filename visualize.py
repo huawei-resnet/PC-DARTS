@@ -130,4 +130,6 @@ if __name__ == '__main__':
 
   plot_not_relaxed(genotype.normal, "normal")
   plot_relaxed(genotype.normal, "normal_r")
+  plot_not_relaxed(genotype.reduce, "reduce")
+  plot_relaxed(genotype.reduce, "reduce_r")
 
