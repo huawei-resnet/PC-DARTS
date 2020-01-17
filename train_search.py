@@ -33,6 +33,7 @@ parser.add_argument('--epochs', type=int, default=50, help='num of training epoc
 parser.add_argument('--init_channels', type=int, default=16, help='num of init channels')
 parser.add_argument('--layers', type=int, default=8, help='total number of layers')
 parser.add_argument('--nodes', type=int, default=4, help='total number of nodes in cell')
+parser.add_argument('--multiplier', type=int, default=4, help='multiplier for cell')
 parser.add_argument('--model_path', type=str, default='saved_models', help='path to save the model')
 parser.add_argument('--cutout', action='store_true', default=False, help='use cutout')
 parser.add_argument('--cutout_length', type=int, default=16, help='cutout length')
@@ -76,7 +77,7 @@ def main():
 
   criterion = nn.CrossEntropyLoss()
   criterion = criterion.cuda()
-  model = Network(args.init_channels, CIFAR_CLASSES, args.layers, criterion, args.nodes)
+  model = Network(args.init_channels, CIFAR_CLASSES, args.layers, criterion, args.nodes, args.multiplier)
   model = model.cuda()
   logging.info("param size = %fMB", utils.count_parameters_in_MB(model))
 
