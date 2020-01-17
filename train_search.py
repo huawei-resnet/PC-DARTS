@@ -113,6 +113,7 @@ def main():
 
   history_train_acc = []
   history_genotype = []
+  history_arch_params = []
   history_lr = []
 
   history_genotype_debug = []
@@ -130,6 +131,9 @@ def main():
     logging.info('genotype = %s', genotype)
     history_genotype.append(genotype)
 
+    arch_params = model.arch_parameters()
+    history_arch_params.append(arch_params)
+
     print(F.softmax(model.alphas_normal, dim=-1))
     print(F.softmax(model.alphas_reduce, dim=-1))
     print(F.softmax(model.betas_normal[2:5], dim=-1))
@@ -145,8 +149,10 @@ def main():
       logging.info('valid_acc %f', valid_acc)
 
     utils.save(model, os.path.join(args.save, 'weights.pt'))
+
   pickle.dump(history_train_acc, open(os.path.join(args.save, 'train_acc.bin'), 'wb'))
   pickle.dump(history_genotype, open(os.path.join(args.save, 'genotype.bin'), 'wb'))
+  pickle.dump(history_arch_params, open('./history/arch_params.bin', 'wb'))
   pickle.dump(history_lr, open(os.path.join(args.save, 'lr.bin'), 'wb'))
   pickle.dump(history_genotype_debug, open(os.path.join(args.save, 'genotype_debug.bin'), 'wb'))
 
