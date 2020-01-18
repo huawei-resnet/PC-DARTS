@@ -153,7 +153,7 @@ def main():
 
   pickle.dump(history_train_acc, open(os.path.join(args.save, 'train_acc.bin'), 'wb'))
   pickle.dump(history_genotype, open(os.path.join(args.save, 'genotype.bin'), 'wb'))
-  pickle.dump(history_arch_params, open('./history/arch_params.bin', 'wb'))
+  pickle.dump(history_arch_params, open('arch_params.bin', 'wb'))
   pickle.dump(history_lr, open(os.path.join(args.save, 'lr.bin'), 'wb'))
   pickle.dump(history_genotype_debug, open(os.path.join(args.save, 'genotype_debug.bin'), 'wb'))
 
