@@ -12,6 +12,7 @@ import genotypes
 import torch.utils
 import torchvision.datasets as dset
 import torch.backends.cudnn as cudnn
+import pickle
 
 from torch.autograd import Variable
 from model import NetworkCIFAR as Network
@@ -37,7 +38,7 @@ parser.add_argument('--cutout_length', type=int, default=16, help='cutout length
 parser.add_argument('--drop_path_prob', type=float, default=0.3, help='drop path probability')
 parser.add_argument('--save', type=str, default='EXP', help='experiment name')
 parser.add_argument('--seed', type=int, default=0, help='random seed')
-parser.add_argument('--arch', type=str, default='DARTS', help='which architecture to use')
+parser.add_argument('--arch', type=str, default='', help='architecture code, e.g. N4-E50-CS8-BS256-20200118-104919')
 parser.add_argument('--grad_clip', type=float, default=5, help='gradient clipping')
 args = parser.parse_args()
 
@@ -69,7 +70,10 @@ def main():
   logging.info('gpu device = %d' % args.gpu)
   logging.info("args = %s", args)
 
-  genotype = eval("genotypes.%s" % args.arch)
+  # args.arch = "N4-E50-CS8-BS256-20200118-104919"
+  with open("./search-" + args.arch + "/genotype.bin", 'rb') as f:
+      data_gen = pickle.load(f)
+  genotype = data_gen[-1]
   model = Network(args.init_channels, CIFAR_CLASSES, args.layers, args.auxiliary, genotype)
   model = model.cuda()
 
