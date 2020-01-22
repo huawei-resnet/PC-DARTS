@@ -106,18 +106,29 @@ def main():
 
   scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, float(args.epochs))
 
+  history_train_acc = []
+  history_valid_acc = []
+  history_lr = []
   for epoch in range(args.epochs):
     scheduler.step()
-    logging.info('epoch %d lr %e', epoch, scheduler.get_lr()[0])
+    lr = scheduler.get_lr()[0]
+    logging.info('epoch %d lr %e', epoch, lr)
+    history_lr.append(lr)
     model.drop_path_prob = args.drop_path_prob * epoch / args.epochs
 
     train_acc, train_obj = train(train_queue, model, criterion, optimizer)
     logging.info('train_acc %f', train_acc)
+    history_train_acc.append(train_acc)
 
     valid_acc, valid_obj = infer(valid_queue, model, criterion)
     logging.info('valid_acc %f', valid_acc)
+    history_valid_acc.append(valid_acc)
 
     utils.save(model, os.path.join(args.save, 'weights.pt'))
+
+  pickle.dump(history_train_acc, open(os.path.join(args.save, 'train_acc.bin'), 'wb'))
+  pickle.dump(history_valid_acc, open(os.path.join(args.save, 'valid_acc.bin'), 'wb'))
+  pickle.dump(history_lr, open(os.path.join(args.save, 'lr.bin'), 'wb'))
 
 
 def train(train_queue, model, criterion, optimizer):
